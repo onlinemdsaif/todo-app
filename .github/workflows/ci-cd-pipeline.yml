@@ -1,0 +1,29 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build and Push Backend Docker Image
+        run: |
+          docker build -t onlinemdsaif/todo-backend ./backend
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push onlinemdsaif/todo-backend
+
+      - name: Build and Push Frontend Docker Image
+        run: |
+          docker build -t onlinemdsaif/todo-frontend ./frontend
+          docker push onlinemdsaif/todo-frontend
+
+      - name: Deploy on Server (if applicable)
+        run: |
+          ssh user@your-server "docker-compose down && docker-compose up -d"
